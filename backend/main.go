@@ -1,30 +1,33 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
-	"os"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/joho/godotenv"
+	_ "backend/docs"
+	"backend/internal/config"
+	"backend/internal/controllers"
+	"backend/internal/database"
+	"backend/internal/db/sqlcgen"
+	"backend/internal/routes"
 )
 
 func main() {
-	_ = godotenv.Load()
+	cfg := config.Load()
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+	ctx := context.Background()
+	pool, err := database.NewPool(ctx, cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("could not connect to database: %v", err)
 	}
+	defer pool.Close()
 
-	r := chi.NewRouter()
-	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("ok"))
-	})
-	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("pong"))
-	})
+	queries := sqlcgen.New(pool)
+	authController := controllers.NewAuthController(queries, cfg.JWTSecret)
+	router := routes.SetupRouter(authController)
 
-	log.Println("listening on :" + port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	log.Println("listening on :" + cfg.Port)
+	log.Println("swagger docs at http://localhost:" + cfg.Port + "/docs/index.html")
+	log.Fatal(http.ListenAndServe(":"+cfg.Port, router))
 }
