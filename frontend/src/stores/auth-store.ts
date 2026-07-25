@@ -30,6 +30,6 @@ export const useAuthStore = create<AuthState>()(
       setSession: (token, user) => set({ accessToken: token, user }),
       logout: () => set({ accessToken: null, user: null }),
     }),
-    { name: "vandhana-auth" },
+    { name: "railway-auth" },
   ),
 );

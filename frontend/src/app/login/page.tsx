@@ -65,7 +65,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Sign in</CardTitle>
-          <CardDescription>Vandhana Rail Maintenance Portal</CardDescription>
+          <CardDescription>Railway Maintenance Portal</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -74,7 +74,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="operator@vandhana.local"
+                placeholder="operator@railway.local"
                 {...register("email")}
               />
               {errors.email && (

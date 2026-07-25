@@ -23,7 +23,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Vandhana Rail Portal API",
+	Title:            "Railway Software Portal API",
 	Description:      "Backend for grinding test data capture, review, and escalation.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

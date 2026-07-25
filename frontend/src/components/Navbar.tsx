@@ -21,7 +21,7 @@ export function Navbar() {
     <header className="flex items-center justify-between border-b border-zinc-200 bg-white px-6 py-3">
       <div className="flex items-center gap-3">
         <span className="text-sm font-semibold text-zinc-900">
-          Vandhana Rail Portal
+          Railway Portal
         </span>
         <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
           {ROLE_LABELS[user.role] ?? user.role}

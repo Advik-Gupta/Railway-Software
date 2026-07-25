@@ -3,7 +3,22 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
-import { Navbar } from "@/components/Navbar";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { NotificationsPanel } from "@/components/NotificationsPanel";
+import { navItemsByRole } from "@/lib/nav-items";
+
+const ROLE_LABELS: Record<string, string> = {
+  operator: "Operator",
+  supervisor: "Supervisor",
+  machine_incharge: "Machine In-charge",
+  fleet_manager: "Fleet Manager",
+  admin: "Admin",
+};
 
 export default function DashboardLayout({
   children,
@@ -11,18 +26,35 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const accessToken = useAuthStore((s) => s.accessToken);
+  const { accessToken, user } = useAuthStore();
 
   useEffect(() => {
-    if (!accessToken) router.replace("/login");
+    if (!accessToken) {
+      router.replace("/login");
+    }
   }, [accessToken, router]);
 
-  if (!accessToken) return null;
+  if (!accessToken || !user) return null;
+
+  const items = navItemsByRole[user.role] ?? [];
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Navbar />
-      <main className="flex-1 bg-zinc-50">{children}</main>
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <div className="flex min-h-screen">
+          <div className="flex flex-1 flex-col">
+            <header className="flex items-center gap-2 border-b border-border px-4 py-3">
+              <SidebarTrigger />
+              <span className="text-sm text-muted-foreground">
+                {ROLE_LABELS[user.role] ?? user.role} Dashboard
+              </span>
+            </header>
+            <main className="flex-1 p-6">{children}</main>
+          </div>
+          <NotificationsPanel />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
