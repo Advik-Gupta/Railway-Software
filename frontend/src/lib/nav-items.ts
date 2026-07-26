@@ -28,18 +28,9 @@ export const navItemsByRole: Record<string, SidebarNavItem[]> = {
   operator: [
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     {
-      title: "Uploads",
-      href: "/dashboard/uploads",
+      title: "Upload Data",
+      href: "/dashboard/upload",
       icon: Upload,
-      items: [
-        { title: "Pre-grinding", href: "/dashboard/uploads/pre-grinding" },
-        { title: "Grinding", href: "/dashboard/uploads/grinding" },
-        { title: "Post-grinding", href: "/dashboard/uploads/post-grinding" },
-        {
-          title: "Test Site Establishment",
-          href: "/dashboard/uploads/test-site",
-        },
-      ],
     },
     {
       title: "Submissions",

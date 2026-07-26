@@ -62,3 +62,7 @@
 </td>
 </tr>
 </table>
+
+#### AI Disclosure
+
+This project was developed with AI assistance. Claude was used primarily to help with the frontend design, UI implementation, and general development support. All final decisions, integration, and project direction were made by the author.
