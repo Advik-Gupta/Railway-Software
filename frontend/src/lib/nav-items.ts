@@ -9,6 +9,8 @@ import {
   ShieldCheck,
   User,
   LogOut,
+  SquareChartGantt,
+  TramFront,
   type LucideIcon,
 } from "lucide-react";
 
@@ -47,18 +49,26 @@ export const navItemsByRole: Record<string, SidebarNavItem[]> = {
       icon: ClipboardList,
     },
   ],
-  machine_incharge: [
-    { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { title: "Machines", href: "/dashboard/machines", icon: Settings },
-    { title: "History", href: "/dashboard/history", icon: ClipboardList },
-  ],
-  fleet_manager: [
-    { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { title: "Locations", href: "/dashboard/locations", icon: MapPin },
-    { title: "Cycles", href: "/dashboard/cycles", icon: ClipboardList },
-  ],
   admin: [
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    {
+      title: "Create",
+      href: "/dashboard/reports",
+      icon: TramFront,
+      items: [
+        { title: "Machines", href: "/dashboard/admin/create/machines" },
+        { title: "Users", href: "/dashboard/admin/create/users" },
+      ],
+    },
+    {
+      title: "Manage",
+      href: "/dashboard/reports",
+      icon: SquareChartGantt,
+      items: [
+        { title: "Machines", href: "/dashboard/admin/manage/machines" },
+        { title: "Users", href: "/dashboard/admin/manage/users" },
+      ],
+    },
     {
       title: "Reports",
       href: "/dashboard/reports",
@@ -68,8 +78,6 @@ export const navItemsByRole: Record<string, SidebarNavItem[]> = {
         { title: "Report History", href: "/dashboard/reports/history" },
       ],
     },
-    { title: "Users", href: "/dashboard/users", icon: Users },
-    { title: "Audit Log", href: "/dashboard/audit", icon: ShieldCheck },
   ],
 };
 
@@ -86,25 +94,9 @@ export const footerItemsByRole: Record<string, SidebarFooterItem[]> = {
     { title: "Settings", href: "/dashboard/settings", icon: Settings },
     { title: "Log out", action: "logout", icon: LogOut },
   ],
-  supervisor: [
-    { title: "Profile", href: "/dashboard/profile", icon: User },
-    { title: "Settings", href: "/dashboard/settings", icon: Settings },
-    { title: "Log out", action: "logout", icon: LogOut },
-  ],
-  machine_incharge: [
-    { title: "Profile", href: "/dashboard/profile", icon: User },
-    { title: "Settings", href: "/dashboard/settings", icon: Settings },
-    { title: "Log out", action: "logout", icon: LogOut },
-  ],
-  fleet_manager: [
-    { title: "Profile", href: "/dashboard/profile", icon: User },
-    { title: "Settings", href: "/dashboard/settings", icon: Settings },
-    { title: "Log out", action: "logout", icon: LogOut },
-  ],
   admin: [
     { title: "Profile", href: "/dashboard/profile", icon: User },
-    { title: "System Settings", href: "/dashboard/settings", icon: Settings },
-    { title: "Users", href: "/dashboard/users", icon: Users },
+    { title: "Settings", href: "/dashboard/settings", icon: Settings },
     { title: "Log out", action: "logout", icon: LogOut },
   ],
 };
