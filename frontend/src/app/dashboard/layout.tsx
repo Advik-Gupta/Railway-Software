@@ -42,15 +42,15 @@ export default function DashboardLayout({
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <div className="flex min-h-screen">
-          <div className="flex flex-1 flex-col">
+        <div className="flex min-h-screen min-w-0">
+          <div className="flex min-w-0 flex-1 flex-col">
             <header className="flex items-center gap-2 border-b border-border px-4 py-3">
               <SidebarTrigger />
               <span className="text-sm text-muted-foreground">
                 {ROLE_LABELS[user.role] ?? user.role} Dashboard
               </span>
             </header>
-            <main className="flex-1 p-6">{children}</main>
+            <main className="min-w-0 flex-1 p-6">{children}</main>
           </div>
           <NotificationsPanel />
         </div>

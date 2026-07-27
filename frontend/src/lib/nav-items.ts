@@ -9,8 +9,11 @@ import {
   ShieldCheck,
   User,
   LogOut,
+  ChartPie,
+  Logs,
   SquareChartGantt,
   TramFront,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
@@ -52,6 +55,15 @@ export const navItemsByRole: Record<string, SidebarNavItem[]> = {
   admin: [
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     {
+      title: "Progress",
+      href: "/dashboard/reports",
+      icon: TrendingUp,
+      items: [
+        { title: "Data Uploads", href: "/dashboard/admin/progress" },
+        { title: "Due", href: "/dashboard/admin/progress/due" },
+      ],
+    },
+    {
       title: "Create",
       href: "/dashboard/reports",
       icon: TramFront,
@@ -78,6 +90,8 @@ export const navItemsByRole: Record<string, SidebarNavItem[]> = {
         { title: "Report History", href: "/dashboard/reports/history" },
       ],
     },
+    { title: "Logs", href: "/dashboard/admin/logs", icon: Logs },
+    { title: "Analytics", href: "/dashboard/admin/analytics", icon: ChartPie },
   ],
 };
 
