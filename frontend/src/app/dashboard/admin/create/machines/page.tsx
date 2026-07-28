@@ -22,6 +22,9 @@ const MACHINE_TYPES: MachineTypeDef[] = [
   { value: "CMRL_VRA", label: "CMRL (VRA)", points: 6 },
 ];
 
+const LINES = ["UP", "DN", "SL", "ML", "BL"];
+const CURVE_TYPES = ["Circular", "Transition", "Straight"];
+
 function todayISO() {
   return new Date().toISOString().split("T")[0];
 }
@@ -36,6 +39,20 @@ export default function CreateMachinePage() {
   const [startingNumber, setStartingNumber] = useState(73);
 
   const [createdDate] = useState(() => todayISO());
+
+  // --- Test Site Details — shared across every generated test site ---
+  const [division, setDivision] = useState("");
+  const [curveType, setCurveType] = useState<string | null>(null);
+  const [curveNumber, setCurveNumber] = useState("");
+  const [degreeOfCurve, setDegreeOfCurve] = useState("");
+  const [section, setSection] = useState("");
+  const [station, setStation] = useState("");
+  const [line, setLine] = useState<string | null>(null);
+  const [kmFrom, setKmFrom] = useState("");
+  const [kmTo, setKmTo] = useState("");
+  const [gmtYear, setGmtYear] = useState("");
+  const [nextGrindingDueDate, setNextGrindingDueDate] = useState("");
+  const [nextRepaintingDueDate, setNextRepaintingDueDate] = useState("");
 
   function selectType(type: MachineTypeDef) {
     setSelectedType(type);
@@ -74,11 +91,30 @@ export default function CreateMachinePage() {
   }, [selectedType, previewTestSite]);
 
   function handleSubmit() {
+    const testSiteDetails = {
+      division,
+      curveType,
+      curveNumber,
+      degreeOfCurve,
+      section,
+      station,
+      line,
+      kmFrom,
+      kmTo,
+      gmtYear,
+      nextGrindingDueDate,
+      nextRepaintingDueDate,
+    };
+
     const payload = {
       machineType: selectedType?.value ?? null,
       machineName,
       pointsPerTestSite: selectedType?.points ?? null,
-      testSites: generatedTestSites,
+      testSites: generatedTestSites.map((site) => ({
+        testSiteNumber: site,
+        createdAt: createdDate,
+        ...testSiteDetails,
+      })),
       createdDate,
     };
 
@@ -185,7 +221,6 @@ export default function CreateMachinePage() {
             />
           </div>
 
-          {/* Generated test site codes preview — mirrors the reference grid */}
           <div className="mt-5">
             <p className="text-xs text-muted-foreground">
               Generated test sites
@@ -203,6 +238,160 @@ export default function CreateMachinePage() {
                   {site}
                 </Card>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Test Site Details — applies to every generated test site above */}
+        <div className="mt-8 rounded-lg border border-border bg-card/40 p-5">
+          <p className="text-sm font-medium text-foreground">
+            Test Site Details
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            These details apply to every test site generated above.
+          </p>
+
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-xs">Division</Label>
+              <Input
+                className="mt-1.5"
+                value={division}
+                onChange={(e) => setDivision(e.target.value)}
+                placeholder="Enter division"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Section</Label>
+              <Input
+                className="mt-1.5"
+                value={section}
+                onChange={(e) => setSection(e.target.value)}
+                placeholder="Enter section"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <Label className="text-xs">Curve Type</Label>
+            <div className="mt-1.5 grid grid-cols-3 gap-2">
+              {CURVE_TYPES.map((type) => (
+                <Card
+                  key={type}
+                  onClick={() => setCurveType(type)}
+                  className={`flex h-10 cursor-pointer items-center justify-center border-border text-xs font-medium transition-colors ${
+                    curveType === type
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "bg-card/40 text-muted-foreground hover:border-primary/50"
+                  }`}
+                >
+                  {type}
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-xs">Curve Number</Label>
+              <Input
+                className="mt-1.5"
+                value={curveNumber}
+                onChange={(e) => setCurveNumber(e.target.value)}
+                placeholder="Enter number"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Degree of Curve</Label>
+              <Input
+                className="mt-1.5"
+                value={degreeOfCurve}
+                onChange={(e) => setDegreeOfCurve(e.target.value)}
+                placeholder="Enter degree"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <Label className="text-xs">Station</Label>
+            <Input
+              className="mt-1.5"
+              value={station}
+              onChange={(e) => setStation(e.target.value)}
+              placeholder="Enter station"
+            />
+          </div>
+
+          <div className="mt-4">
+            <Label className="text-xs">Line</Label>
+            <div className="mt-1.5 grid grid-cols-5 gap-2">
+              {LINES.map((l) => (
+                <Card
+                  key={l}
+                  onClick={() => setLine(l)}
+                  className={`flex h-10 cursor-pointer items-center justify-center border-border text-xs font-medium transition-colors ${
+                    line === l
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "bg-card/40 text-muted-foreground hover:border-primary/50"
+                  }`}
+                >
+                  {l}
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-3 gap-4">
+            <div>
+              <Label className="text-xs">KM From</Label>
+              <Input
+                type="number"
+                className="mt-1.5"
+                value={kmFrom}
+                onChange={(e) => setKmFrom(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">KM To</Label>
+              <Input
+                type="number"
+                className="mt-1.5"
+                value={kmTo}
+                onChange={(e) => setKmTo(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">GMT / Year</Label>
+              <Input
+                type="number"
+                className="mt-1.5"
+                value={gmtYear}
+                onChange={(e) => setGmtYear(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-xs">Next Grinding Due Date</Label>
+              <Input
+                type="date"
+                className="mt-1.5"
+                value={nextGrindingDueDate}
+                onChange={(e) => setNextGrindingDueDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Next Repainting Due Date</Label>
+              <Input
+                type="date"
+                className="mt-1.5"
+                value={nextRepaintingDueDate}
+                onChange={(e) => setNextRepaintingDueDate(e.target.value)}
+              />
             </div>
           </div>
         </div>
