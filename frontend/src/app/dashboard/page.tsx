@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuthStore } from "@/stores/auth-store";
-import { OperatorDashboard } from "@/components/dashboard/OperatorDashboard";
+import OperatorDashboard from "@/components/dashboard/OperatorDashboard";
 import AdminDashboard from "@/components/dashboard/AdminDashboard";
 
 export default function DashboardPage() {
