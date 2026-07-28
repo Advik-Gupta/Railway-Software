@@ -59,8 +59,7 @@ export const navItemsByRole: Record<string, SidebarNavItem[]> = {
       href: "/dashboard/reports",
       icon: TrendingUp,
       items: [
-        { title: "Data Uploads", href: "/dashboard/admin/progress" },
-        { title: "Due", href: "/dashboard/admin/progress/due" },
+        { title: "Data Uploads", href: "/dashboard/admin/progress/data" },
       ],
     },
     {

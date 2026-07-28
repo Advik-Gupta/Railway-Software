@@ -6,10 +6,19 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   flexRender,
   type ColumnDef,
+  type SortingState,
 } from "@tanstack/react-table";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  Search,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,6 +43,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   searchPlaceholder?: string;
   pageSizeOptions?: number[];
+  initialSorting?: SortingState;
 }
 
 export function DataTable<TData, TValue>({
@@ -41,8 +51,10 @@ export function DataTable<TData, TValue>({
   data,
   searchPlaceholder = "Search...",
   pageSizeOptions = [5, 10, 20, 50],
+  initialSorting = [],
 }: DataTableProps<TData, TValue>) {
   const [globalFilter, setGlobalFilter] = useState("");
+  const [sorting, setSorting] = useState<SortingState>(initialSorting);
 
   const table = useReactTable({
     data,
@@ -50,10 +62,10 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     onGlobalFilterChange: setGlobalFilter,
-    state: {
-      globalFilter,
-    },
+    onSortingChange: setSorting,
+    state: { globalFilter, sorting },
     initialState: {
       pagination: { pageSize: pageSizeOptions[1] ?? 10 },
     },
@@ -65,7 +77,7 @@ export function DataTable<TData, TValue>({
   const rangeEnd = Math.min((pageIndex + 1) * pageSize, totalRows);
 
   return (
-    <div>
+    <div className="min-w-0">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -82,16 +94,40 @@ export function DataTable<TData, TValue>({
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
+                  {headerGroup.headers.map((header) => {
+                    const canSort = header.column.getCanSort();
+                    const sortDir = header.column.getIsSorted();
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder ? null : canSort ? (
+                          <button
+                            type="button"
+                            onClick={header.column.getToggleSortingHandler()}
+                            className="flex items-center gap-1 hover:text-foreground"
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                            {sortDir === "asc" && (
+                              <ChevronUp className="size-3.5" />
+                            )}
+                            {sortDir === "desc" && (
+                              <ChevronDown className="size-3.5" />
+                            )}
+                            {!sortDir && (
+                              <ChevronsUpDown className="size-3.5 opacity-40" />
+                            )}
+                          </button>
+                        ) : (
+                          flexRender(
                             header.column.columnDef.header,
                             header.getContext(),
-                          )}
-                    </TableHead>
-                  ))}
+                          )
+                        )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
               ))}
             </TableHeader>
