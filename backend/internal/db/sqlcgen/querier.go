@@ -6,11 +6,22 @@ package sqlcgen
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
+	CreateMachine(ctx context.Context, arg CreateMachineParams) (Machine, error)
+	CreatePoint(ctx context.Context, arg CreatePointParams) (Point, error)
+	CreateTestSite(ctx context.Context, arg CreateTestSiteParams) (TestSite, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
+	DeleteMachine(ctx context.Context, id pgtype.UUID) error
+	GetMachine(ctx context.Context, id pgtype.UUID) (Machine, error)
+	GetTestSite(ctx context.Context, id pgtype.UUID) (TestSite, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
+	ListMachines(ctx context.Context) ([]Machine, error)
+	ListPointsByTestSite(ctx context.Context, testSiteID pgtype.UUID) ([]Point, error)
+	ListTestSitesByMachine(ctx context.Context, machineID pgtype.UUID) ([]TestSite, error)
 }
 
 var _ Querier = (*Queries)(nil)

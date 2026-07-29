@@ -8,6 +8,125 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type GrindCycle struct {
+	ID               pgtype.UUID        `json:"id"`
+	PointID          pgtype.UUID        `json:"point_id"`
+	CycleNumber      int32              `json:"cycle_number"`
+	GrindDate        pgtype.Date        `json:"grind_date"`
+	PreviousGmt      pgtype.Numeric     `json:"previous_gmt"`
+	CurrentGmt       pgtype.Numeric     `json:"current_gmt"`
+	NextDueDate      pgtype.Date        `json:"next_due_date"`
+	TopView          []string           `json:"top_view"`
+	Dpt              []string           `json:"dpt"`
+	ContactBand      []string           `json:"contact_band"`
+	GaugeView        []string           `json:"gauge_view"`
+	LongitudinalView []string           `json:"longitudinal_view"`
+	StarGauge        []string           `json:"star_gauge"`
+	MiniprofWFiles   []string           `json:"miniprof_w_files"`
+	MiniprofBanFiles []string           `json:"miniprof_ban_files"`
+	SurfaceHardness  pgtype.Numeric     `json:"surface_hardness"`
+	SurfaceRoughness pgtype.Numeric     `json:"surface_roughness"`
+	Remarks          pgtype.Text        `json:"remarks"`
+	Missing          []string           `json:"missing"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+}
+
+type GrindPostDatum struct {
+	ID           pgtype.UUID        `json:"id"`
+	GrindCycleID pgtype.UUID        `json:"grind_cycle_id"`
+	ImageUrl     pgtype.Text        `json:"image_url"`
+	Measurement  []byte             `json:"measurement"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
+type GrindPreDatum struct {
+	ID           pgtype.UUID        `json:"id"`
+	GrindCycleID pgtype.UUID        `json:"grind_cycle_id"`
+	ImageUrl     pgtype.Text        `json:"image_url"`
+	Measurement  []byte             `json:"measurement"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
+type Machine struct {
+	ID                 pgtype.UUID        `json:"id"`
+	Name               string             `json:"name"`
+	MachineType        string             `json:"machine_type"`
+	AssignedEngineerID pgtype.UUID        `json:"assigned_engineer_id"`
+	CreatedBy          pgtype.UUID        `json:"created_by"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+}
+
+type MachineEngineer struct {
+	ID         pgtype.UUID `json:"id"`
+	MachineID  pgtype.UUID `json:"machine_id"`
+	EngineerID pgtype.UUID `json:"engineer_id"`
+}
+
+type Point struct {
+	ID         pgtype.UUID        `json:"id"`
+	TestSiteID pgtype.UUID        `json:"test_site_id"`
+	PointName  string             `json:"point_name"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+}
+
+type RepaintCycle struct {
+	ID               pgtype.UUID        `json:"id"`
+	PointID          pgtype.UUID        `json:"point_id"`
+	CycleNumber      int32              `json:"cycle_number"`
+	RepaintDate      pgtype.Date        `json:"repaint_date"`
+	NextDueDate      pgtype.Date        `json:"next_due_date"`
+	TopView          []string           `json:"top_view"`
+	Dpt              []string           `json:"dpt"`
+	ContactBand      []string           `json:"contact_band"`
+	GaugeView        []string           `json:"gauge_view"`
+	LongitudinalView []string           `json:"longitudinal_view"`
+	StarGauge        []string           `json:"star_gauge"`
+	MiniprofWFiles   []string           `json:"miniprof_w_files"`
+	MiniprofBanFiles []string           `json:"miniprof_ban_files"`
+	SurfaceHardness  pgtype.Numeric     `json:"surface_hardness"`
+	SurfaceRoughness pgtype.Numeric     `json:"surface_roughness"`
+	Remarks          pgtype.Text        `json:"remarks"`
+	Missing          []string           `json:"missing"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+}
+
+type RepaintPostDatum struct {
+	ID             pgtype.UUID        `json:"id"`
+	RepaintCycleID pgtype.UUID        `json:"repaint_cycle_id"`
+	ImageUrl       pgtype.Text        `json:"image_url"`
+	Measurement    []byte             `json:"measurement"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
+type RepaintPreDatum struct {
+	ID             pgtype.UUID        `json:"id"`
+	RepaintCycleID pgtype.UUID        `json:"repaint_cycle_id"`
+	ImageUrl       pgtype.Text        `json:"image_url"`
+	Measurement    []byte             `json:"measurement"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
+type TestSite struct {
+	ID                    pgtype.UUID        `json:"id"`
+	MachineID             pgtype.UUID        `json:"machine_id"`
+	TestSiteNumber        string             `json:"test_site_number"`
+	Division              pgtype.Text        `json:"division"`
+	CurveType             pgtype.Text        `json:"curve_type"`
+	CurveNumber           pgtype.Text        `json:"curve_number"`
+	DegreeOfCurve         pgtype.Text        `json:"degree_of_curve"`
+	Section               pgtype.Text        `json:"section"`
+	Station               pgtype.Text        `json:"station"`
+	Line                  pgtype.Text        `json:"line"`
+	KmFrom                pgtype.Numeric     `json:"km_from"`
+	KmTo                  pgtype.Numeric     `json:"km_to"`
+	AnnualGmt             pgtype.Numeric     `json:"annual_gmt"`
+	EstablishmentDate     pgtype.Date        `json:"establishment_date"`
+	NextGrindingDueDate   pgtype.Date        `json:"next_grinding_due_date"`
+	NextRepaintingDueDate pgtype.Date        `json:"next_repainting_due_date"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+	CreatedBy             pgtype.UUID        `json:"created_by"`
+}
+
 type User struct {
 	ID           pgtype.UUID        `json:"id"`
 	Email        string             `json:"email"`
@@ -15,4 +134,5 @@ type User struct {
 	FullName     string             `json:"full_name"`
 	Role         string             `json:"role"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	PhoneNumber  pgtype.Text        `json:"phone_number"`
 }

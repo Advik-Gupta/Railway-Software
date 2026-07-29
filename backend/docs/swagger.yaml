@@ -3,7 +3,7 @@ host: localhost:8080
 info:
   contact: {}
   description: Backend for grinding test data capture, review, and escalation.
-  title: Railway Software Portal API
+  title: Vandhana Rail Portal API
   version: "0.1"
 paths: {}
 swagger: "2.0"

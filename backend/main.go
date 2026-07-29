@@ -24,8 +24,14 @@ func main() {
 	defer pool.Close()
 
 	queries := sqlcgen.New(pool)
-	authController := controllers.NewAuthController(queries, cfg.JWTSecret)
-	router := routes.SetupRouter(authController)
+
+	router := routes.SetupRouter(routes.Controllers{
+		Auth:      controllers.NewAuthController(queries, cfg.JWTSecret),
+		Machine:   controllers.NewMachineController(queries, pool),
+		TestSite:  controllers.NewTestSiteController(queries),
+		Point:     controllers.NewPointController(queries),
+		JWTSecret: cfg.JWTSecret,
+	})
 
 	log.Println("listening on :" + cfg.Port)
 	log.Println("swagger docs at http://localhost:" + cfg.Port + "/docs/index.html")
