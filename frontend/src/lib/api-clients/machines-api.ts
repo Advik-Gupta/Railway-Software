@@ -38,7 +38,20 @@ export interface TestSite {
   id: string;
   machine_id: string;
   test_site_number: string;
-  [key: string]: unknown;
+  division: string | null;
+  curve_type: string | null;
+  curve_number: string | null;
+  degree_of_curve: string | null;
+  section: string | null;
+  station: string | null;
+  line: string | null;
+  km_from: string | null;
+  km_to: string | null;
+  annual_gmt: string | null;
+  establishment_date: string | null;
+  next_grinding_due_date: string | null;
+  next_repainting_due_date: string | null;
+  created_at: string;
 }
 
 export interface Point {
@@ -76,4 +89,14 @@ export async function getMachine(id: string) {
 
 export async function deleteMachine(id: string) {
   await api.delete(`/machines/${id}`);
+}
+
+export async function assignEngineer(
+  machineId: string,
+  engineerId: string | null,
+) {
+  const res = await api.patch<Machine>(`/machines/${machineId}/engineer`, {
+    engineerId: engineerId ?? "",
+  });
+  return res.data;
 }

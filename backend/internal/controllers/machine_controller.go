@@ -49,6 +49,10 @@ type testSiteDetailsRequest struct {
 	NextRepaintingDueDate string  `json:"nextRepaintingDueDate"`
 }
 
+type assignEngineerRequest struct {
+	EngineerID string `json:"engineerId"` // empty string means "unassign"
+}
+
 // Create builds a machine plus every generated test site and point in one
 // transaction. created_by always comes from the authenticated user's JWT
 // (set by middleware.RequireAuth) — never trusted from the request body.
@@ -156,6 +160,39 @@ func (m *MachineController) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (m *MachineController) AssignEngineer(w http.ResponseWriter, r *http.Request) {
+	id, err := parseUUIDParam(r, "id")
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid machine id")
+		return
+	}
+
+	var req assignEngineerRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	var engineerID pgtype.UUID
+	if req.EngineerID != "" {
+		if err := engineerID.Scan(req.EngineerID); err != nil {
+			writeError(w, http.StatusBadRequest, "invalid engineer id")
+			return
+		}
+	}
+
+	machine, err := m.Queries.UpdateMachineEngineer(r.Context(), sqlcgen.UpdateMachineEngineerParams{
+		ID:                 id,
+		AssignedEngineerID: engineerID,
+	})
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not assign engineer")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, machine)
 }
 
 // parseUUIDParam is shared by every controller with an :id-style route param.

@@ -117,3 +117,28 @@ func (q *Queries) ListMachines(ctx context.Context) ([]ListMachinesRow, error) {
 	}
 	return items, nil
 }
+
+const updateMachineEngineer = `-- name: UpdateMachineEngineer :one
+UPDATE machines SET assigned_engineer_id = $2
+WHERE id = $1
+RETURNING id, name, machine_type, assigned_engineer_id, created_by, created_at
+`
+
+type UpdateMachineEngineerParams struct {
+	ID                 pgtype.UUID `json:"id"`
+	AssignedEngineerID pgtype.UUID `json:"assigned_engineer_id"`
+}
+
+func (q *Queries) UpdateMachineEngineer(ctx context.Context, arg UpdateMachineEngineerParams) (Machine, error) {
+	row := q.db.QueryRow(ctx, updateMachineEngineer, arg.ID, arg.AssignedEngineerID)
+	var i Machine
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.MachineType,
+		&i.AssignedEngineerID,
+		&i.CreatedBy,
+		&i.CreatedAt,
+	)
+	return i, err
+}

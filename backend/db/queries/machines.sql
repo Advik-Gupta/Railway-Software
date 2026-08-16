@@ -17,3 +17,8 @@ SELECT * FROM machines WHERE id = $1;
 
 -- name: DeleteMachine :exec
 DELETE FROM machines WHERE id = $1;
+
+-- name: UpdateMachineEngineer :one
+UPDATE machines SET assigned_engineer_id = $2
+WHERE id = $1
+RETURNING *;

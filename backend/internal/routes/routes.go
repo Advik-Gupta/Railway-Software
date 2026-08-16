@@ -16,6 +16,7 @@ type Controllers struct {
 	Machine   *controllers.MachineController
 	TestSite  *controllers.TestSiteController
 	Point     *controllers.PointController
+	User      *controllers.UserController
 	JWTSecret string
 }
 
@@ -46,12 +47,16 @@ func SetupRouter(c Controllers) *chi.Mux {
 			r.Get("/", c.Machine.List)
 			r.Get("/{id}", c.Machine.Get)
 			r.With(appmiddleware.RequireRole("admin")).Delete("/{id}", c.Machine.Delete)
+			r.With(appmiddleware.RequireRole("admin")).Patch("/{id}/engineer", c.Machine.AssignEngineer)
 
 			r.Get("/{machineId}/test-sites", c.TestSite.ListByMachine)
 		})
 
 		r.Get("/api/v1/test-sites/{id}", c.TestSite.Get)
 		r.Get("/api/v1/test-sites/{testSiteId}/points", c.Point.ListByTestSite)
+
+		r.With(appmiddleware.RequireRole("admin")).Get("/api/v1/users", c.User.List)
+		r.Get("/api/v1/users/{id}", c.User.Get)
 	})
 
 	r.Get("/docs/*", httpSwagger.WrapHandler)
