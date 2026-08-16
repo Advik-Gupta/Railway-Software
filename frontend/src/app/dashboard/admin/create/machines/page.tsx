@@ -7,6 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { createMachine } from "@/lib/api-clients/machines-api";
 
 interface MachineTypeDef {
   value: string;
@@ -90,35 +93,44 @@ export default function CreateMachinePage() {
     );
   }, [selectedType, previewTestSite]);
 
-  function handleSubmit() {
-    const testSiteDetails = {
-      division,
-      curveType,
-      curveNumber,
-      degreeOfCurve,
-      section,
-      station,
-      line,
-      kmFrom,
-      kmTo,
-      gmtYear,
-      nextGrindingDueDate,
-      nextRepaintingDueDate,
-    };
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-    const payload = {
-      machineType: selectedType?.value ?? null,
-      machineName,
-      pointsPerTestSite: selectedType?.points ?? null,
-      testSites: generatedTestSites.map((site) => ({
-        testSiteNumber: site,
-        createdAt: createdDate,
-        ...testSiteDetails,
-      })),
-      createdDate,
-    };
-
-    console.log("CREATE MACHINE:", payload);
+  async function handleSubmit() {
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      await createMachine({
+        machineType: selectedType!.value,
+        machineName,
+        testSiteCount,
+        startingNumber,
+        testSiteDetails: {
+          division,
+          curveType,
+          curveNumber,
+          degreeOfCurve,
+          section,
+          station,
+          line,
+          kmFrom: Number(kmFrom) || 0,
+          kmTo: Number(kmTo) || 0,
+          gmtYear: Number(gmtYear) || 0,
+          nextGrindingDueDate,
+          nextRepaintingDueDate,
+        },
+      });
+      router.push("/dashboard/admin/manage/machines");
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.data?.error) {
+        setSubmitError(err.response.data.error);
+      } else {
+        setSubmitError("Could not create machine. Is the server running?");
+      }
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const isComplete =
@@ -441,9 +453,15 @@ export default function CreateMachinePage() {
           />
         </div>
 
+        {submitError && (
+          <p className="mt-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {submitError}
+          </p>
+        )}
+
         <div className="mt-8 flex justify-end">
-          <Button onClick={handleSubmit} disabled={!isComplete}>
-            Create Machine
+          <Button onClick={handleSubmit} disabled={!isComplete || submitting}>
+            {submitting ? "Creating..." : "Create Machine"}
           </Button>
         </div>
       </div>

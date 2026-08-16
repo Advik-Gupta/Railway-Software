@@ -19,7 +19,7 @@ type Querier interface {
 	GetMachine(ctx context.Context, id pgtype.UUID) (Machine, error)
 	GetTestSite(ctx context.Context, id pgtype.UUID) (TestSite, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
-	ListMachines(ctx context.Context) ([]Machine, error)
+	ListMachines(ctx context.Context) ([]ListMachinesRow, error)
 	ListPointsByTestSite(ctx context.Context, testSiteID pgtype.UUID) ([]Point, error)
 	ListTestSitesByMachine(ctx context.Context, machineID pgtype.UUID) ([]TestSite, error)
 }

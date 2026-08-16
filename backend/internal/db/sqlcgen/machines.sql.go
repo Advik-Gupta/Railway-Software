@@ -71,18 +71,34 @@ func (q *Queries) GetMachine(ctx context.Context, id pgtype.UUID) (Machine, erro
 }
 
 const listMachines = `-- name: ListMachines :many
-SELECT id, name, machine_type, assigned_engineer_id, created_by, created_at FROM machines ORDER BY created_at DESC
+SELECT
+    m.id, m.name, m.machine_type, m.assigned_engineer_id, m.created_by, m.created_at,
+    COUNT(ts.id) AS test_site_count
+FROM machines m
+LEFT JOIN test_sites ts ON ts.machine_id = m.id
+GROUP BY m.id
+ORDER BY m.created_at DESC
 `
 
-func (q *Queries) ListMachines(ctx context.Context) ([]Machine, error) {
+type ListMachinesRow struct {
+	ID                 pgtype.UUID        `json:"id"`
+	Name               string             `json:"name"`
+	MachineType        string             `json:"machine_type"`
+	AssignedEngineerID pgtype.UUID        `json:"assigned_engineer_id"`
+	CreatedBy          pgtype.UUID        `json:"created_by"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	TestSiteCount      int64              `json:"test_site_count"`
+}
+
+func (q *Queries) ListMachines(ctx context.Context) ([]ListMachinesRow, error) {
 	rows, err := q.db.Query(ctx, listMachines)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Machine
+	var items []ListMachinesRow
 	for rows.Next() {
-		var i Machine
+		var i ListMachinesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -90,6 +106,7 @@ func (q *Queries) ListMachines(ctx context.Context) ([]Machine, error) {
 			&i.AssignedEngineerID,
 			&i.CreatedBy,
 			&i.CreatedAt,
+			&i.TestSiteCount,
 		); err != nil {
 			return nil, err
 		}

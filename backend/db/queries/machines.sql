@@ -4,7 +4,13 @@ VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: ListMachines :many
-SELECT * FROM machines ORDER BY created_at DESC;
+SELECT
+    m.*,
+    COUNT(ts.id) AS test_site_count
+FROM machines m
+LEFT JOIN test_sites ts ON ts.machine_id = m.id
+GROUP BY m.id
+ORDER BY m.created_at DESC;
 
 -- name: GetMachine :one
 SELECT * FROM machines WHERE id = $1;
