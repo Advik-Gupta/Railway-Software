@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, PowerOff } from "lucide-react";
 import { RequireRole } from "@/components/RequireRole";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +53,10 @@ export default function MachineDetailPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [selectedTestSiteId, setSelectedTestSiteId] = useState<string | null>(
+    null,
+  );
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -65,6 +69,7 @@ export default function MachineDetailPage() {
       setTestSites(machineData.testSites);
       setUsers(usersData);
       setSelectedEngineerId(machineData.machine.assigned_engineer_id ?? null);
+      setSelectedTestSiteId(machineData.testSites[0]?.id ?? null);
     } catch {
       setError("Could not load machine. Is the server running?");
     } finally {
@@ -89,6 +94,20 @@ export default function MachineDetailPage() {
     }
   }
 
+  function handleCommissionNewTestSite() {
+    // TODO: wire up — will open the test site creation flow
+    console.log("COMMISSION NEW TEST SITE for machine:", machineId);
+  }
+
+  function handleDecommission(testSite: TestSite) {
+    // TODO: wire up — will call the decommission endpoint
+    console.log(
+      "DECOMMISSION TEST SITE:",
+      testSite.id,
+      testSite.test_site_number,
+    );
+  }
+
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl px-6 py-10 text-sm text-muted-foreground">
@@ -111,9 +130,12 @@ export default function MachineDetailPage() {
   const hasChanges =
     selectedEngineerId !== (machine.assigned_engineer_id ?? null);
 
+  const selectedTestSite =
+    testSites.find((ts) => ts.id === selectedTestSiteId) ?? null;
+
   return (
     <RequireRole roles={["admin"]}>
-      <div className="mx-auto max-w-4xl min-w-0 px-6 py-10">
+      <div className="mx-auto max-w-6xl min-w-0 px-6 py-10">
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-semibold text-foreground">
             {machine.name}
@@ -227,72 +249,150 @@ export default function MachineDetailPage() {
         {/* Test Sites */}
         <Card className="mt-6 border-border bg-card/40 p-5">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-foreground">Test Sites</p>
-            <Badge variant="secondary">{testSites.length} sites</Badge>
-          </div>
-
-          <div className="mt-4 space-y-3">
-            {testSites.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No test sites yet.
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                Test Sites
               </p>
-            )}
-
-            {testSites.map((ts) => (
-              <Card key={ts.id} className="border-border bg-background/40 p-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-foreground">
-                    {ts.test_site_number}
-                  </p>
-                  {ts.line && <Badge variant="outline">{ts.line} line</Badge>}
-                </div>
-
-                <dl className="mt-3 grid grid-cols-2 gap-y-1.5 text-xs sm:grid-cols-3">
-                  <dt className="text-muted-foreground">Division</dt>
-                  <dd className="text-foreground sm:col-span-2">
-                    {ts.division || "—"}
-                  </dd>
-
-                  <dt className="text-muted-foreground">Section</dt>
-                  <dd className="text-foreground sm:col-span-2">
-                    {ts.section || "—"}
-                  </dd>
-
-                  <dt className="text-muted-foreground">Station</dt>
-                  <dd className="text-foreground sm:col-span-2">
-                    {ts.station || "—"}
-                  </dd>
-
-                  <dt className="text-muted-foreground">Curve</dt>
-                  <dd className="text-foreground sm:col-span-2">
-                    {ts.curve_type || "—"}
-                    {ts.curve_number ? ` · #${ts.curve_number}` : ""}
-                    {ts.degree_of_curve ? ` · ${ts.degree_of_curve}°` : ""}
-                  </dd>
-
-                  <dt className="text-muted-foreground">KM Range</dt>
-                  <dd className="text-foreground sm:col-span-2">
-                    {ts.km_from ?? "—"} – {ts.km_to ?? "—"}
-                  </dd>
-
-                  <dt className="text-muted-foreground">GMT / Year</dt>
-                  <dd className="text-foreground sm:col-span-2">
-                    {ts.annual_gmt ?? "—"}
-                  </dd>
-
-                  <dt className="text-muted-foreground">Grinding Due</dt>
-                  <dd className="text-foreground sm:col-span-2">
-                    {ts.next_grinding_due_date || "Not set"}
-                  </dd>
-
-                  <dt className="text-muted-foreground">Repainting Due</dt>
-                  <dd className="text-foreground sm:col-span-2">
-                    {ts.next_repainting_due_date || "Not set"}
-                  </dd>
-                </dl>
-              </Card>
-            ))}
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Click a test site to view its details.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">{testSites.length} sites</Badge>
+              <Button size="sm" onClick={handleCommissionNewTestSite}>
+                <Plus className="mr-1.5 size-3.5" />
+                Commission New Test Site
+              </Button>
+            </div>
           </div>
+
+          {testSites.length === 0 ? (
+            <p className="mt-4 text-sm text-muted-foreground">
+              No test sites yet.
+            </p>
+          ) : (
+            <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+              {/* Diagrammatic grid of test sites */}
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {testSites.map((ts) => {
+                  const isSelected = ts.id === selectedTestSiteId;
+                  return (
+                    <button
+                      key={ts.id}
+                      type="button"
+                      onClick={() => setSelectedTestSiteId(ts.id)}
+                      className={cn(
+                        "flex h-16 flex-col items-center justify-center gap-0.5 rounded-lg border text-sm font-medium transition-colors",
+                        isSelected
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border bg-background/40 text-muted-foreground hover:border-primary/50 hover:text-foreground",
+                      )}
+                    >
+                      {ts.test_site_number}
+                      {ts.line && (
+                        <span className="text-[10px] font-normal opacity-70">
+                          {ts.line}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Detail panel for the selected test site */}
+              <Card className="border-border bg-background/40 p-4">
+                {selectedTestSite ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-foreground">
+                        {selectedTestSite.test_site_number}
+                      </p>
+                      {selectedTestSite.line && (
+                        <Badge variant="outline">
+                          {selectedTestSite.line} line
+                        </Badge>
+                      )}
+                    </div>
+
+                    <dl className="mt-3 space-y-2 text-xs">
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-muted-foreground">Division</dt>
+                        <dd className="text-right text-foreground">
+                          {selectedTestSite.division || "—"}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-muted-foreground">Section</dt>
+                        <dd className="text-right text-foreground">
+                          {selectedTestSite.section || "—"}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-muted-foreground">Station</dt>
+                        <dd className="text-right text-foreground">
+                          {selectedTestSite.station || "—"}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-muted-foreground">Curve</dt>
+                        <dd className="text-right text-foreground">
+                          {selectedTestSite.curve_type || "—"}
+                          {selectedTestSite.curve_number
+                            ? ` · #${selectedTestSite.curve_number}`
+                            : ""}
+                          {selectedTestSite.degree_of_curve
+                            ? ` · ${selectedTestSite.degree_of_curve}°`
+                            : ""}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-muted-foreground">KM Range</dt>
+                        <dd className="text-right text-foreground">
+                          {selectedTestSite.km_from ?? "—"} –{" "}
+                          {selectedTestSite.km_to ?? "—"}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-muted-foreground">GMT / Year</dt>
+                        <dd className="text-right text-foreground">
+                          {selectedTestSite.annual_gmt ?? "—"}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-muted-foreground">Grinding Due</dt>
+                        <dd className="text-right text-foreground">
+                          {selectedTestSite.next_grinding_due_date || "Not set"}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-muted-foreground">
+                          Repainting Due
+                        </dt>
+                        <dd className="text-right text-foreground">
+                          {selectedTestSite.next_repainting_due_date ||
+                            "Not set"}
+                        </dd>
+                      </div>
+                    </dl>
+
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="mt-4 w-full"
+                      onClick={() => handleDecommission(selectedTestSite)}
+                    >
+                      <PowerOff className="mr-1.5 size-3.5" />
+                      Decommission Test Site
+                    </Button>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Select a test site to view its details.
+                  </p>
+                )}
+              </Card>
+            </div>
+          )}
         </Card>
       </div>
     </RequireRole>
