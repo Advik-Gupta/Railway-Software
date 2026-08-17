@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
-import axios from "axios";
-import { createMachine } from "@/lib/api-clients/machines-api";
+import { useCreateMachine } from "@/hooks/use-machines";
 
 interface MachineTypeDef {
   value: string;
@@ -94,14 +93,11 @@ export default function CreateMachinePage() {
   }, [selectedType, previewTestSite]);
 
   const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const createMachine = useCreateMachine();
 
-  async function handleSubmit() {
-    setSubmitError(null);
-    setSubmitting(true);
-    try {
-      await createMachine({
+  function handleSubmit() {
+    createMachine.mutate(
+      {
         machineType: selectedType!.value,
         machineName,
         testSiteCount,
@@ -120,17 +116,11 @@ export default function CreateMachinePage() {
           nextGrindingDueDate,
           nextRepaintingDueDate,
         },
-      });
-      router.push("/dashboard/admin/manage/machines");
-    } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.data?.error) {
-        setSubmitError(err.response.data.error);
-      } else {
-        setSubmitError("Could not create machine. Is the server running?");
-      }
-    } finally {
-      setSubmitting(false);
-    }
+      },
+      {
+        onSuccess: () => router.push("/dashboard/admin/manage/machines"),
+      },
+    );
   }
 
   const isComplete =
@@ -453,15 +443,18 @@ export default function CreateMachinePage() {
           />
         </div>
 
-        {submitError && (
+        {createMachine.isError && (
           <p className="mt-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {submitError}
+            Could not create machine. Please check your inputs and try again.
           </p>
         )}
 
         <div className="mt-8 flex justify-end">
-          <Button onClick={handleSubmit} disabled={!isComplete || submitting}>
-            {submitting ? "Creating..." : "Create Machine"}
+          <Button
+            onClick={handleSubmit}
+            disabled={!isComplete || createMachine.isPending}
+          >
+            {createMachine.isPending ? "Creating..." : "Create Machine"}
           </Button>
         </div>
       </div>

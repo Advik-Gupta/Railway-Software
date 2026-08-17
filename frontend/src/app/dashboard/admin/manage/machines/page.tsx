@@ -19,11 +19,8 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import {
-  listMachines,
-  deleteMachine,
-  type Machine,
-} from "@/lib/api-clients/machines-api";
+import { type Machine } from "@/lib/api-clients/machines-api";
+import { useMachines, useDeleteMachine } from "@/hooks/use-machines";
 
 const MACHINE_TYPE_LABELS: Record<string, string> = {
   RGI96: "RGI96",
@@ -34,38 +31,14 @@ const MACHINE_TYPE_LABELS: Record<string, string> = {
 };
 
 export default function ManageMachinesPage() {
-  const [machines, setMachines] = useState<Machine[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: machines = [], isLoading, isError } = useMachines();
+  const deleteMachine = useDeleteMachine();
   const [deletingMachine, setDeletingMachine] = useState<Machine | null>(null);
-
-  const loadMachines = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await listMachines();
-      setMachines(data);
-    } catch {
-      setError("Could not load machines. Is the server running?");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadMachines();
-  }, [loadMachines]);
 
   async function handleDeleteConfirm() {
     if (!deletingMachine) return;
-    try {
-      await deleteMachine(deletingMachine.id);
-      setMachines((prev) => prev.filter((m) => m.id !== deletingMachine.id));
-    } catch {
-      setError("Could not delete machine.");
-    } finally {
-      setDeletingMachine(null);
-    }
+    deleteMachine.mutate(deletingMachine.id);
+    setDeletingMachine(null);
   }
 
   const columns = useMemo<ColumnDef<Machine>[]>(
@@ -131,14 +104,14 @@ export default function ManageMachinesPage() {
           </Button>
         </div>
 
-        {error && (
+        {isError && (
           <p className="mt-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {error}
+            {isError}
           </p>
         )}
 
         <div className="mt-6">
-          {loading ? (
+          {isLoading ? (
             <DataTableSkeleton columnCount={5} />
           ) : (
             <DataTable

@@ -57,7 +57,7 @@ export const navItemsByRole: Record<string, SidebarNavItem[]> = {
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     {
       title: "Progress",
-      href: "/dashboard/reports",
+      href: "/dashboard/admin/progress",
       icon: TrendingUp,
       items: [
         { title: "Data Uploads", href: "/dashboard/admin/progress/data" },
@@ -65,7 +65,7 @@ export const navItemsByRole: Record<string, SidebarNavItem[]> = {
     },
     {
       title: "Create",
-      href: "/dashboard/reports",
+      href: "/dashboard/admin/create",
       icon: TramFront,
       items: [
         { title: "Machines", href: "/dashboard/admin/create/machines" },
@@ -74,7 +74,7 @@ export const navItemsByRole: Record<string, SidebarNavItem[]> = {
     },
     {
       title: "Manage",
-      href: "/dashboard/reports",
+      href: "/dashboard/admin/manage",
       icon: SquareChartGantt,
       items: [
         { title: "Machines", href: "/dashboard/admin/manage/machines" },
@@ -83,7 +83,7 @@ export const navItemsByRole: Record<string, SidebarNavItem[]> = {
     },
     {
       title: "Reports",
-      href: "/dashboard/reports",
+      href: "/dashboard/admin/reports",
       icon: FileBarChart,
       items: [
         { title: "Generate Report", href: "/dashboard/reports/generate" },

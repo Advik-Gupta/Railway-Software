@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { Check, ChevronsUpDown, Plus, PowerOff } from "lucide-react";
 import { RequireRole } from "@/components/RequireRole";
@@ -8,8 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import {
   Command,
   CommandEmpty,
@@ -23,13 +23,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  getMachine,
-  assignEngineer,
-  type Machine,
-  type TestSite,
-} from "@/lib/api-clients/machines-api";
-import { listUsers, type UserSummary } from "@/lib/api-clients/users-api";
+import { useMachine, useUsers, useAssignEngineer } from "@/hooks/use-machines";
+import type { TestSite } from "@/lib/api-clients/machines-api";
+import { MachineDetailSkeleton } from "@/components/skeletons/MachineDetailSkeleton";
 
 const MACHINE_TYPE_LABELS: Record<string, string> = {
   RGI96: "RGI96",
@@ -43,71 +39,36 @@ export default function MachineDetailPage() {
   const params = useParams<{ id: string }>();
   const machineId = params.id;
 
-  const [machine, setMachine] = useState<Machine | null>(null);
-  const [testSites, setTestSites] = useState<TestSite[]>([]);
-  const [users, setUsers] = useState<UserSummary[]>([]);
+  const { data: machineData, isLoading, isError } = useMachine(machineId);
+  const { data: users = [] } = useUsers();
+  const assignEngineer = useAssignEngineer();
+
   const [selectedEngineerId, setSelectedEngineerId] = useState<string | null>(
     null,
   );
+  const [engineerTouched, setEngineerTouched] = useState(false);
   const [comboOpen, setComboOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const [selectedTestSiteId, setSelectedTestSiteId] = useState<string | null>(
     null,
   );
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [machineData, usersData] = await Promise.all([
-        getMachine(machineId),
-        listUsers(),
-      ]);
-      setMachine(machineData.machine);
-      setTestSites(machineData.testSites);
-      setUsers(usersData);
-      setSelectedEngineerId(machineData.machine.assigned_engineer_id ?? null);
-      setSelectedTestSiteId(machineData.testSites[0]?.id ?? null);
-    } catch {
-      setError("Could not load machine. Is the server running?");
-    } finally {
-      setLoading(false);
-    }
-  }, [machineId]);
+  const machine = machineData?.machine ?? null;
+  const testSites = machineData?.testSites ?? [];
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  // Derive the "currently shown" selection from server state until the
+  // user actually touches the picker — avoids needing a useEffect just to
+  // sync local state with fetched data.
+  const currentEngineerId = engineerTouched
+    ? selectedEngineerId
+    : (machine?.assigned_engineer_id ?? null);
 
-  async function handleAssign() {
-    setSaving(true);
-    setError(null);
-    try {
-      const updated = await assignEngineer(machineId, selectedEngineerId);
-      setMachine(updated);
-      toast.success(
-        selectedEngineerId
-          ? `Engineer assigned to ${machine?.name}`
-          : `Engineer unassigned from ${machine?.name}`,
-      );
-    } catch {
-      setError("Could not assign engineer.");
-      toast.error("Could not assign engineer");
-    } finally {
-      setSaving(false);
-    }
-  }
+  const currentTestSiteId = selectedTestSiteId ?? testSites[0]?.id ?? null;
 
   function handleCommissionNewTestSite() {
-    // TODO: wire up — will open the test site creation flow
     console.log("COMMISSION NEW TEST SITE for machine:", machineId);
   }
 
   function handleDecommission(testSite: TestSite) {
-    // TODO: wire up — will call the decommission endpoint
     console.log(
       "DECOMMISSION TEST SITE:",
       testSite.id,
@@ -115,30 +76,21 @@ export default function MachineDetailPage() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="mx-auto max-w-4xl px-6 py-10 text-sm text-muted-foreground">
-        Loading machine...
-      </div>
-    );
-  }
+  if (isLoading) return <MachineDetailSkeleton />;
 
-  if (error && !machine) {
+  if (isError || !machine) {
     return (
       <div className="mx-auto max-w-4xl px-6 py-10 text-sm text-destructive">
-        {error}
+        Could not load machine. Is the server running?
       </div>
     );
   }
 
-  if (!machine) return null;
-
-  const selectedUser = users.find((u) => u.id === selectedEngineerId);
+  const selectedUser = users.find((u) => u.id === currentEngineerId);
   const hasChanges =
-    selectedEngineerId !== (machine.assigned_engineer_id ?? null);
-
+    currentEngineerId !== (machine.assigned_engineer_id ?? null);
   const selectedTestSite =
-    testSites.find((ts) => ts.id === selectedTestSiteId) ?? null;
+    testSites.find((ts) => ts.id === currentTestSiteId) ?? null;
 
   return (
     <RequireRole roles={["admin"]}>
@@ -154,12 +106,6 @@ export default function MachineDetailPage() {
         <p className="mt-1.5 text-sm text-muted-foreground">
           Created {new Date(machine.created_at).toLocaleDateString()}
         </p>
-
-        {error && (
-          <p className="mt-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {error}
-          </p>
-        )}
 
         {/* Assigned Engineer */}
         <Card className="mt-8 border-border bg-card/40 p-5">
@@ -197,6 +143,7 @@ export default function MachineDetailPage() {
                           value="unassigned"
                           onSelect={() => {
                             setSelectedEngineerId(null);
+                            setEngineerTouched(true);
                             setComboOpen(false);
                           }}
                           className="mb-1 py-2.5 last:mb-0 data-selected:bg-accent data-selected:text-accent-foreground"
@@ -204,7 +151,7 @@ export default function MachineDetailPage() {
                           <Check
                             className={cn(
                               "mr-2 size-4 shrink-0",
-                              selectedEngineerId === null
+                              currentEngineerId === null
                                 ? "opacity-100"
                                 : "opacity-0",
                             )}
@@ -218,6 +165,7 @@ export default function MachineDetailPage() {
                             value={`${u.full_name} ${u.email}`}
                             onSelect={() => {
                               setSelectedEngineerId(u.id);
+                              setEngineerTouched(true);
                               setComboOpen(false);
                             }}
                             className="mb-1 py-2.5 last:mb-0 data-selected:bg-accent data-selected:text-accent-foreground"
@@ -225,7 +173,7 @@ export default function MachineDetailPage() {
                             <Check
                               className={cn(
                                 "mr-2 size-4 shrink-0",
-                                selectedEngineerId === u.id
+                                currentEngineerId === u.id
                                   ? "opacity-100"
                                   : "opacity-0",
                               )}
@@ -247,13 +195,21 @@ export default function MachineDetailPage() {
               </Popover>
             </div>
 
-            <Button onClick={handleAssign} disabled={!hasChanges || saving}>
-              {saving ? "Saving..." : "Save"}
+            <Button
+              onClick={() =>
+                assignEngineer.mutate({
+                  machineId,
+                  engineerId: currentEngineerId,
+                })
+              }
+              disabled={!hasChanges || assignEngineer.isPending}
+            >
+              {assignEngineer.isPending ? "Saving..." : "Save"}
             </Button>
           </div>
         </Card>
 
-        {/* Test Sites */}
+        {/* Test Sites — unchanged from before, just reading `testSites`/`selectedTestSite` as derived above */}
         <Card className="mt-6 border-border bg-card/40 p-5">
           <div className="flex items-center justify-between">
             <div>
@@ -279,10 +235,9 @@ export default function MachineDetailPage() {
             </p>
           ) : (
             <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-              {/* Diagrammatic grid of test sites */}
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                 {testSites.map((ts) => {
-                  const isSelected = ts.id === selectedTestSiteId;
+                  const isSelected = ts.id === currentTestSiteId;
                   return (
                     <button
                       key={ts.id}
@@ -306,7 +261,6 @@ export default function MachineDetailPage() {
                 })}
               </div>
 
-              {/* Detail panel for the selected test site */}
               <Card className="border-border bg-background/40 p-4">
                 {selectedTestSite ? (
                   <>
