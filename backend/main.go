@@ -31,6 +31,7 @@ func main() {
 		TestSite:  controllers.NewTestSiteController(queries),
 		Point:     controllers.NewPointController(queries),
 		User:      controllers.NewUserController(queries),
+		Seed: controllers.NewSeedController(pool),
 		JWTSecret: cfg.JWTSecret,
 	})
 

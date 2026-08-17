@@ -29,7 +29,21 @@ type FormValues = z.infer<typeof schema>;
 const IS_DEV = process.env.NODE_ENV !== "production";
 
 const TEST_ACCOUNTS = [
-  { label: "Operator", email: "test@example.com", password: "password123" },
+  {
+    label: "Ravi Kumar",
+    email: "ravi.kumar@seed.local",
+    password: "123456",
+  },
+  {
+    label: "Sneha Rao",
+    email: "sneha.rao@seed.local",
+    password: "123456",
+  },
+  {
+    label: "Divya Iyer",
+    email: "divya.iyer@seed.local",
+    password: "123456",
+  },
   { label: "Admin", email: "admin@example.com", password: "password123" },
 ];
 

@@ -16,6 +16,7 @@ type Querier interface {
 	CreateTestSite(ctx context.Context, arg CreateTestSiteParams) (TestSite, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	DeleteMachine(ctx context.Context, id pgtype.UUID) error
+	DeleteOperators(ctx context.Context) error
 	GetMachine(ctx context.Context, id pgtype.UUID) (Machine, error)
 	GetTestSite(ctx context.Context, id pgtype.UUID) (TestSite, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)

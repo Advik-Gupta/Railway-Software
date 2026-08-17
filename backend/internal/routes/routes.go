@@ -17,6 +17,7 @@ type Controllers struct {
 	TestSite  *controllers.TestSiteController
 	Point     *controllers.PointController
 	User      *controllers.UserController
+	Seed      *controllers.SeedController
 	JWTSecret string
 }
 
@@ -41,6 +42,8 @@ func SetupRouter(c Controllers) *chi.Mux {
 
 	r.Group(func(r chi.Router) {
 		r.Use(appmiddleware.RequireAuth(c.JWTSecret))
+
+		r.With(appmiddleware.RequireRole("admin")).Get("/api/v1/seed/dev", c.Seed.Run)
 
 		r.Route("/api/v1/machines", func(r chi.Router) {
 			r.With(appmiddleware.RequireRole("admin")).Post("/", c.Machine.Create)

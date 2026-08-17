@@ -11,3 +11,6 @@ SELECT id, email, full_name, role, created_at FROM users ORDER BY full_name;
 
 -- name: GetUserByID :one
 SELECT id, email, full_name, role, created_at FROM users WHERE id = $1;
+
+-- name: DeleteOperators :exec
+DELETE FROM users WHERE role = 'operator';

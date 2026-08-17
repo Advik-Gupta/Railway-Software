@@ -14,6 +14,7 @@ import {
   SquareChartGantt,
   TramFront,
   TrendingUp,
+  BeanIcon,
   type LucideIcon,
 } from "lucide-react";
 
@@ -91,6 +92,7 @@ export const navItemsByRole: Record<string, SidebarNavItem[]> = {
     },
     { title: "Logs", href: "/dashboard/admin/logs", icon: Logs },
     { title: "Analytics", href: "/dashboard/admin/analytics", icon: ChartPie },
+    { title: "Seed", href: "/dashboard/admin/seed", icon: BeanIcon },
   ],
 };
 
