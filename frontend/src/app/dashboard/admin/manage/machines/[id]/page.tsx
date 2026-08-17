@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   Command,
   CommandEmpty,
@@ -87,8 +88,14 @@ export default function MachineDetailPage() {
     try {
       const updated = await assignEngineer(machineId, selectedEngineerId);
       setMachine(updated);
+      toast.success(
+        selectedEngineerId
+          ? `Engineer assigned to ${machine?.name}`
+          : `Engineer unassigned from ${machine?.name}`,
+      );
     } catch {
       setError("Could not assign engineer.");
+      toast.error("Could not assign engineer");
     } finally {
       setSaving(false);
     }

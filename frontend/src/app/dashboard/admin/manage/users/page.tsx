@@ -9,6 +9,7 @@ import { createActionsColumn } from "@/components/data-table/actions-column";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DataTableSkeleton } from "@/components/skeletons/DataTableSkeleton";
 import {
   AlertDialog,
   AlertDialogContent,

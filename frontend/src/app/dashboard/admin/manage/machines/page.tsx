@@ -8,6 +8,7 @@ import { DataTable } from "@/components/data-table/DataTable";
 import { createActionsColumn } from "@/components/data-table/actions-column";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DataTableSkeleton } from "@/components/skeletons/DataTableSkeleton";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -138,7 +139,7 @@ export default function ManageMachinesPage() {
 
         <div className="mt-6">
           {loading ? (
-            <p className="text-sm text-muted-foreground">Loading machines...</p>
+            <DataTableSkeleton columnCount={5} />
           ) : (
             <DataTable
               columns={columns}
