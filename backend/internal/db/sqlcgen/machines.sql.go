@@ -73,21 +73,24 @@ func (q *Queries) GetMachine(ctx context.Context, id pgtype.UUID) (Machine, erro
 const listMachines = `-- name: ListMachines :many
 SELECT
     m.id, m.name, m.machine_type, m.assigned_engineer_id, m.created_by, m.created_at,
-    COUNT(ts.id) AS test_site_count
+    COUNT(DISTINCT ts.id) AS test_site_count,
+    u.full_name AS assigned_engineer_name
 FROM machines m
 LEFT JOIN test_sites ts ON ts.machine_id = m.id
-GROUP BY m.id
+LEFT JOIN users u ON u.id = m.assigned_engineer_id
+GROUP BY m.id, u.full_name
 ORDER BY m.created_at DESC
 `
 
 type ListMachinesRow struct {
-	ID                 pgtype.UUID        `json:"id"`
-	Name               string             `json:"name"`
-	MachineType        string             `json:"machine_type"`
-	AssignedEngineerID pgtype.UUID        `json:"assigned_engineer_id"`
-	CreatedBy          pgtype.UUID        `json:"created_by"`
-	CreatedAt          pgtype.Timestamptz `json:"created_at"`
-	TestSiteCount      int64              `json:"test_site_count"`
+	ID                   pgtype.UUID        `json:"id"`
+	Name                 string             `json:"name"`
+	MachineType          string             `json:"machine_type"`
+	AssignedEngineerID   pgtype.UUID        `json:"assigned_engineer_id"`
+	CreatedBy            pgtype.UUID        `json:"created_by"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	TestSiteCount        int64              `json:"test_site_count"`
+	AssignedEngineerName pgtype.Text        `json:"assigned_engineer_name"`
 }
 
 func (q *Queries) ListMachines(ctx context.Context) ([]ListMachinesRow, error) {
@@ -107,6 +110,7 @@ func (q *Queries) ListMachines(ctx context.Context) ([]ListMachinesRow, error) {
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.TestSiteCount,
+			&i.AssignedEngineerName,
 		); err != nil {
 			return nil, err
 		}

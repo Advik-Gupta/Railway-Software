@@ -17,15 +17,19 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	DeleteMachine(ctx context.Context, id pgtype.UUID) error
 	DeleteOperators(ctx context.Context) error
+	DeleteUser(ctx context.Context, id pgtype.UUID) error
 	GetMachine(ctx context.Context, id pgtype.UUID) (Machine, error)
 	GetTestSite(ctx context.Context, id pgtype.UUID) (TestSite, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDRow, error)
 	ListMachines(ctx context.Context) ([]ListMachinesRow, error)
+	ListMachinesByEngineer(ctx context.Context, assignedEngineerID pgtype.UUID) ([]Machine, error)
 	ListPointsByTestSite(ctx context.Context, testSiteID pgtype.UUID) ([]Point, error)
 	ListTestSitesByMachine(ctx context.Context, machineID pgtype.UUID) ([]TestSite, error)
 	ListUsers(ctx context.Context) ([]ListUsersRow, error)
 	UpdateMachineEngineer(ctx context.Context, arg UpdateMachineEngineerParams) (Machine, error)
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error)
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 }
 
 var _ Querier = (*Queries)(nil)

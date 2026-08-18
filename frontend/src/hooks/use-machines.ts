@@ -12,6 +12,7 @@ import {
 } from "@/lib/api-clients/machines-api";
 import { listUsers } from "@/lib/api-clients/users-api";
 import { machineKeys, userKeys } from "@/lib/query-keys";
+import { listMachinesByEngineer } from "@/lib/api-clients/machines-api";
 
 export function useMachines() {
   return useQuery({
@@ -28,9 +29,6 @@ export function useMachine(id: string) {
   });
 }
 
-// Engineer names appear across many machine pages and change rarely —
-// worth a longer staleTime than the default so switching between the
-// machine list and detail pages doesn't keep re-fetching the same users.
 export function useUsers() {
   return useQuery({
     queryKey: userKeys.lists(),
@@ -79,12 +77,11 @@ export function useAssignEngineer() {
       engineerId: string | null;
     }) => assignEngineer(machineId, engineerId),
     onSuccess: (updated) => {
-      // Patch the detail cache immediately — no need to wait on a refetch
-      // for a change we already know the exact result of.
       queryClient.setQueryData(machineKeys.detail(updated.id), (old: any) =>
         old ? { ...old, machine: updated } : old,
       );
       queryClient.invalidateQueries({ queryKey: machineKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: machineKeys.all });
       toast.success(
         updated.assigned_engineer_id
           ? "Engineer assigned"
@@ -94,5 +91,13 @@ export function useAssignEngineer() {
     onError: () => {
       toast.error("Could not assign engineer");
     },
+  });
+}
+
+export function useMachinesByEngineer(userId: string) {
+  return useQuery({
+    queryKey: machineKeys.byEngineer(userId),
+    queryFn: async () => (await listMachinesByEngineer(userId)) ?? [],
+    enabled: !!userId,
   });
 }

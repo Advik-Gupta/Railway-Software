@@ -6,10 +6,12 @@ RETURNING *;
 -- name: ListMachines :many
 SELECT
     m.*,
-    COUNT(ts.id) AS test_site_count
+    COUNT(DISTINCT ts.id) AS test_site_count,
+    u.full_name AS assigned_engineer_name
 FROM machines m
 LEFT JOIN test_sites ts ON ts.machine_id = m.id
-GROUP BY m.id
+LEFT JOIN users u ON u.id = m.assigned_engineer_id
+GROUP BY m.id, u.full_name
 ORDER BY m.created_at DESC;
 
 -- name: GetMachine :one

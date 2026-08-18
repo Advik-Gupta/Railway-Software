@@ -59,6 +59,15 @@ func (q *Queries) DeleteOperators(ctx context.Context) error {
 	return err
 }
 
+const deleteUser = `-- name: DeleteUser :exec
+DELETE FROM users WHERE id = $1
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteUser, id)
+	return err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, email, password_hash, full_name, role, created_at, phone_number FROM users WHERE email = $1
 `
@@ -103,6 +112,37 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDR
 	return i, err
 }
 
+const listMachinesByEngineer = `-- name: ListMachinesByEngineer :many
+SELECT id, name, machine_type, assigned_engineer_id, created_by, created_at FROM machines WHERE assigned_engineer_id = $1 ORDER BY name
+`
+
+func (q *Queries) ListMachinesByEngineer(ctx context.Context, assignedEngineerID pgtype.UUID) ([]Machine, error) {
+	rows, err := q.db.Query(ctx, listMachinesByEngineer, assignedEngineerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Machine
+	for rows.Next() {
+		var i Machine
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.MachineType,
+			&i.AssignedEngineerID,
+			&i.CreatedBy,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUsers = `-- name: ListUsers :many
 SELECT id, email, full_name, role, created_at FROM users ORDER BY full_name
 `
@@ -139,4 +179,62 @@ func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateUser = `-- name: UpdateUser :one
+UPDATE users
+SET full_name = $2, email = $3, role = $4, phone_number = $5
+WHERE id = $1
+RETURNING id, email, full_name, role, phone_number, created_at
+`
+
+type UpdateUserParams struct {
+	ID          pgtype.UUID `json:"id"`
+	FullName    string      `json:"full_name"`
+	Email       string      `json:"email"`
+	Role        string      `json:"role"`
+	PhoneNumber pgtype.Text `json:"phone_number"`
+}
+
+type UpdateUserRow struct {
+	ID          pgtype.UUID        `json:"id"`
+	Email       string             `json:"email"`
+	FullName    string             `json:"full_name"`
+	Role        string             `json:"role"`
+	PhoneNumber pgtype.Text        `json:"phone_number"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
+	row := q.db.QueryRow(ctx, updateUser,
+		arg.ID,
+		arg.FullName,
+		arg.Email,
+		arg.Role,
+		arg.PhoneNumber,
+	)
+	var i UpdateUserRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.FullName,
+		&i.Role,
+		&i.PhoneNumber,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateUserPassword = `-- name: UpdateUserPassword :exec
+UPDATE users SET password_hash = $2 WHERE id = $1
+`
+
+type UpdateUserPasswordParams struct {
+	ID           pgtype.UUID `json:"id"`
+	PasswordHash string      `json:"password_hash"`
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
+	_, err := q.db.Exec(ctx, updateUserPassword, arg.ID, arg.PasswordHash)
+	return err
 }

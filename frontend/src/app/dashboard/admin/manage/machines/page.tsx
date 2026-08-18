@@ -79,6 +79,18 @@ export default function ManageMachinesPage() {
           </span>
         ),
       },
+      {
+        accessorKey: "assigned_engineer_name",
+        header: "Assigned Engineer",
+        cell: ({ getValue }) => {
+          const name = getValue<string | null>();
+          return name ? (
+            <span className="text-foreground">{name}</span>
+          ) : (
+            <span className="text-muted-foreground">None</span>
+          );
+        },
+      },
       createActionsColumn<Machine>({
         onDelete: (machine) => setDeletingMachine(machine),
         viewHref: (machine) => `/dashboard/admin/manage/machines/${machine.id}`,

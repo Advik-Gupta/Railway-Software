@@ -5,6 +5,7 @@ export interface Machine {
   name: string;
   machine_type: string;
   assigned_engineer_id: string | null;
+  assigned_engineer_name: string | null;
   created_by: string;
   created_at: string;
   test_site_count?: number;
@@ -98,5 +99,10 @@ export async function assignEngineer(
   const res = await api.patch<Machine>(`/machines/${machineId}/engineer`, {
     engineerId: engineerId ?? "",
   });
+  return res.data;
+}
+
+export async function listMachinesByEngineer(userId: string) {
+  const res = await api.get<Machine[]>(`/users/${userId}/machines`);
   return res.data;
 }

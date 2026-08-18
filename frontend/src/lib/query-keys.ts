@@ -5,9 +5,12 @@ export const machineKeys = {
   all: ["machines"] as const,
   lists: () => [...machineKeys.all, "list"] as const,
   detail: (id: string) => [...machineKeys.all, "detail", id] as const,
+  byEngineer: (userId: string) =>
+    [...machineKeys.all, "byEngineer", userId] as const,
 };
 
 export const userKeys = {
   all: ["users"] as const,
   lists: () => [...userKeys.all, "list"] as const,
+  detail: (id: string) => [...userKeys.all, "detail", id] as const,
 };
